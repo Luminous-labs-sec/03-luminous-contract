@@ -1,14 +1,30 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#![no_std]
+use soroban_sdk::{contract, contractimpl, Env, String};
+
+#[contract]
+pub struct LuminousContract;
+
+#[contractimpl]
+impl LuminousContract {
+    pub fn greet(env: Env, name: String) -> String {
+        let greeting = String::from_slice(&env, "Hello, ");
+        greeting.concat(&name)
+    }
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
+    use soroban_sdk::Env;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn test_greet() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, LuminousContract);
+        let client = LuminousContractClient::new(&env, &contract_id);
+
+        let name = String::from_slice(&env, "Luminous");
+        let result = client.greet(&name);
+        assert_eq!(result.to_string(), "Hello, Luminous");
     }
 }
